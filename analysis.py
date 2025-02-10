@@ -385,8 +385,8 @@ if not df.empty:
     display_metric(cols2, "Total Claim Amount", f"{total_claim_amount:,.0f} M")
     display_metric(cols3, "Total Approved Claim Amount", f"{total_app_claim_amount:,.0f} M")
     display_metric(cols1, "Total Declined Claim Amount", f"{total_dec_claim_amount:,.0f} K")
-    display_metric(cols2, "Average Claim Amount Per Client", f"{average_amount:,.1f} K")
-    display_metric(cols3, "Average Approved Claim Amount Per Client", f"{average_app_amount:,.1f} K")
+    display_metric(cols2, "Average Claim Amount", f"{average_amount:,.1f} K")
+    display_metric(cols3, "Average Approved Claim Amount", f"{average_app_amount:,.1f} K")
 
 
     custom_colors = ["#009DAE", "#e66c37", "#461b09", "#f8a785", "#CC3636","#9ACBD0"]
