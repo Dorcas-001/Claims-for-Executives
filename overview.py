@@ -360,7 +360,7 @@ if not df.empty:
             """, unsafe_allow_html=True)
 
     # Display client and claim metrics
-    st.markdown(f'<h2 class="custom-subheader">For all Claims in Numbers ({filter_description.strip()})</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="custom-subheader">For Health Insurance or ProActiv Claims in Numbers</h2>', unsafe_allow_html=True)
     cols1, cols2, cols3 = st.columns(3)
     display_metric(cols1, "Number of Clients", total_clients)
     display_metric(cols2, "Number of Claims", f"{total_claims:,}")
@@ -370,7 +370,7 @@ if not df.empty:
     display_metric(cols3, "Denial Rate", f"{denial_rate:.2f} %")
 
     # Display claim amount metrics
-    st.markdown(f'<h2 class="custom-subheader">For all Claim Amounts ({filter_description.strip()})</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="custom-subheader">For Health Insurance or ProActiv Claim Amounts </h2>', unsafe_allow_html=True)
     cols1, cols2, cols3 = st.columns(3)
     display_metric(cols1, "Total Claims", total_claims)
     display_metric(cols2, "Total Claim Amount", f"{total_claim_amount:,.0f} M")

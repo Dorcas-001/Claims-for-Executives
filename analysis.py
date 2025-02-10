@@ -175,7 +175,7 @@ month_to_quarter = {
     "October": "Q4", "November": "Q4", "December": "Q4"
 }
 
-# Create a three-column layout
+# Create a four-column layout for filters
 col1, col2, col3, col4 = st.columns(4)
 
 # Year selector (allow multiple selections)
@@ -220,7 +220,7 @@ with col3:
 
 # Business Line selector (pre-select all options by default)
 with col4:
-    business_lines = sorted(df['Product'].dropna().unique())
+    business_lines = sorted(df['Product'].dropna().unique()) if 'Product' in df.columns else []
     selected_business_lines = st.multiselect(
         "Select Business Lines",
         options=business_lines,
@@ -229,10 +229,16 @@ with col4:
     if selected_business_lines:
         df = df[df['Product'].isin(selected_business_lines)]
 
+# Dynamically calculate the date range based on selected filters
+if selected_months:
+    # Filter DataFrame by selected months
+    df_filtered = df[df['Month'].isin(selected_months)]
+else:
+    df_filtered = df
 
-# Get minimum and maximum dates for the date input
-startDate = df["Claim Created Date"].min()
-endDate = df["Claim Created Date"].max()
+# Get the minimum and maximum dates from the filtered DataFrame
+startDate = df_filtered["Claim Created Date"].min()
+endDate = df_filtered["Claim Created Date"].max()
 
 # Define CSS for the styled date input boxes
 st.markdown("""
@@ -278,6 +284,12 @@ with col1:
     date1 = pd.to_datetime(display_date_input(col1, "Start Date", startDate, startDate, endDate, key="start_date_key"))
 with col2:
     date2 = pd.to_datetime(display_date_input(col2, "End Date", endDate, startDate, endDate, key="end_date_key"))
+
+# Filter the DataFrame based on the selected date range
+if date1 and date2:
+    df = df[(df["Claim Created Date"] >= date1) & (df["Claim Created Date"] <= date2)]
+
+
 
 
 df_out = df[df['Claim Type'] == 'Outpatient']
@@ -381,7 +393,7 @@ if not df.empty:
 
 
     # Display client and claim metrics
-    st.markdown(f'<h2 class="custom-subheader">For all Claims in Numbers ({filter_description.strip()})</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="custom-subheader">For Health Insurance or ProActiv Claims in Numbers</h2>', unsafe_allow_html=True)
     cols1, cols2, cols3 = st.columns(3)
     display_metric(cols1, "Number of Clients", total_clients)
     display_metric(cols2, "Number of Claims", f"{total_claims:,}")
@@ -391,7 +403,7 @@ if not df.empty:
     display_metric(cols3, "Denial Rate", f"{denial_rate:.2f} %")
 
     # Display claim amount metrics
-    st.markdown(f'<h2 class="custom-subheader">For all Claim Amounts ({filter_description.strip()})</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="custom-subheader">For Health Insurance or ProActiv Claim Amounts </h2>', unsafe_allow_html=True)
     cols1, cols2, cols3 = st.columns(3)
     display_metric(cols1, "Total Claims", total_claims)
     display_metric(cols2, "Total Claim Amount", f"{total_claim_amount:,.0f} M")
