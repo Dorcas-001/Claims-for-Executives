@@ -166,16 +166,7 @@ if not filter_description:
     filter_description = "All data"
 
 
-
-# Define the mapping of months to quarters
-month_to_quarter = {
-    "January": "Q1", "February": "Q1", "March": "Q1",
-    "April": "Q2", "May": "Q2", "June": "Q2",
-    "July": "Q3", "August": "Q3", "September": "Q3",
-    "October": "Q4", "November": "Q4", "December": "Q4"
-}
-
-# Create a four-column layout for filters
+# Create a three-column layout
 col1, col2, col3, col4 = st.columns(4)
 
 # Year selector (allow multiple selections)
@@ -184,22 +175,22 @@ with col1:
     selected_years = st.multiselect(
         "Select Years",
         options=years,
-        default=[years[-1]]  # Default to the most recent year
+        default=[years[-1]],  # Default to the most recent year
+        key="year_selector_multiselect"
     )
     if selected_years:
         df = df[df['Year'].isin(selected_years)]
 
 # Month selector (allow multiple selections)
 with col2:
-    sorted_months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ]
     selected_months = st.multiselect(
         "Select Months",
         options=sorted_months,
-        default=["January"]  # Default to January
+        default=["January"],  # Default to January
+        key="month_selector_multiselect"
     )
+    if selected_months:
+        df = df[df['Month'].isin(selected_months)]
 
     # Dynamically calculate the quarters based on selected months
     if selected_months:
@@ -213,7 +204,8 @@ with col3:
     selected_quarters = st.multiselect(
         "Select Quarters",
         options=quarters,
-        default=suggested_quarters  # Pre-select quarters based on selected months
+        default=suggested_quarters,  # Pre-select quarters based on selected months
+        key="filter_quarter_multiselect"
     )
     if selected_quarters:
         df = df[df['Quarter'].isin(selected_quarters)]
@@ -224,7 +216,8 @@ with col4:
     selected_business_lines = st.multiselect(
         "Select Business Lines",
         options=business_lines,
-        default=business_lines  # Pre-select all business lines by default
+        default=business_lines,  # Pre-select all business lines by default
+        key="filter_business_line_multiselect"
     )
     if selected_business_lines:
         df = df[df['Product'].isin(selected_business_lines)]
@@ -239,6 +232,7 @@ else:
 # Get the minimum and maximum dates from the filtered DataFrame
 startDate = df_filtered["Claim Created Date"].min()
 endDate = df_filtered["Claim Created Date"].max()
+
 
 # Define CSS for the styled date input boxes
 st.markdown("""
@@ -264,11 +258,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Add a title for the date range selection
-st.markdown('<div class="date-range-title">Select Claim Date Range</div>', unsafe_allow_html=True)
 
 # Create 2-column layout for date inputs
 col1, col2 = st.columns(2)
+# Add a title for the date range selection
+st.markdown('<div class="date-range-title">Select Claim Date Range</div>', unsafe_allow_html=True)
 
 # Function to display date input in styled boxes
 def display_date_input(col, title, default_date, min_date, max_date, key):
@@ -281,15 +275,14 @@ def display_date_input(col, title, default_date, min_date, max_date, key):
 
 # Display date inputs with unique keys
 with col1:
-    date1 = pd.to_datetime(display_date_input(col1, "Start Date", startDate, startDate, endDate, key="start_date_key"))
+    date1 = pd.to_datetime(display_date_input(col1, "Start Date", startDate, startDate, endDate, key="date_start_multiselect"))
+
 with col2:
-    date2 = pd.to_datetime(display_date_input(col2, "End Date", endDate, startDate, endDate, key="end_date_key"))
+    date2 = pd.to_datetime(display_date_input(col2, "End Date", endDate, startDate, endDate, key="date_end_multiselect"))
 
 # Filter the DataFrame based on the selected date range
 if date1 and date2:
     df = df[(df["Claim Created Date"] >= date1) & (df["Claim Created Date"] <= date2)]
-
-
 
 
 df_out = df[df['Claim Type'] == 'Outpatient']
@@ -393,7 +386,7 @@ if not df.empty:
 
 
     # Display client and claim metrics
-    st.markdown('<h2 class="custom-subheader">For Health Insurance or ProActiv Claims in Numbers</h2>', unsafe_allow_html=True)
+    st.markdown(f'<h2 class="custom-subheader">For all Claims in Numbers ({filter_description.strip()})</h2>', unsafe_allow_html=True)
     cols1, cols2, cols3 = st.columns(3)
     display_metric(cols1, "Number of Clients", total_clients)
     display_metric(cols2, "Number of Claims", f"{total_claims:,}")
@@ -403,7 +396,7 @@ if not df.empty:
     display_metric(cols3, "Denial Rate", f"{denial_rate:.2f} %")
 
     # Display claim amount metrics
-    st.markdown('<h2 class="custom-subheader">For Health Insurance or ProActiv Claim Amounts </h2>', unsafe_allow_html=True)
+    st.markdown(f'<h2 class="custom-subheader">For all Claim Amounts ({filter_description.strip()})</h2>', unsafe_allow_html=True)
     cols1, cols2, cols3 = st.columns(3)
     display_metric(cols1, "Total Claims", total_claims)
     display_metric(cols2, "Total Claim Amount", f"{total_claim_amount:,.0f} M")
