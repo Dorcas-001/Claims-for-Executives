@@ -166,6 +166,15 @@ if not filter_description:
     filter_description = "All data"
 
 
+
+# Define the mapping of months to quarters
+month_to_quarter = {
+    "January": "Q1", "February": "Q1", "March": "Q1",
+    "April": "Q2", "May": "Q2", "June": "Q2",
+    "July": "Q3", "August": "Q3", "September": "Q3",
+    "October": "Q4", "November": "Q4", "December": "Q4"
+}
+
 # Create a three-column layout
 col1, col2, col3, col4 = st.columns(4)
 
@@ -175,43 +184,47 @@ with col1:
     selected_years = st.multiselect(
         "Select Years",
         options=years,
-        default=[years[-1]],  # Default to the most recent year
-        key="year_selector_multiselect"
+        default=[years[-1]]  # Default to the most recent year
     )
     if selected_years:
         df = df[df['Year'].isin(selected_years)]
 
 # Month selector (allow multiple selections)
 with col2:
+    sorted_months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ]
     selected_months = st.multiselect(
         "Select Months",
         options=sorted_months,
-        default=["January"],  # Default to January
-        key="month_selector_multiselect"
+        default=["January"]  # Default to January
     )
-    if selected_months:
-        df = df[df['Month'].isin(selected_months)]
 
-# Quarter selector (allow multiple selections)
+    # Dynamically calculate the quarters based on selected months
+    if selected_months:
+        suggested_quarters = list(set(month_to_quarter[month] for month in selected_months))
+    else:
+        suggested_quarters = sorted(df['Quarter'].dropna().unique())  # Default to all quarters
+
+# Quarter selector (allow manual selection, with dynamic suggestions)
 with col3:
     quarters = sorted(df['Quarter'].dropna().unique())
     selected_quarters = st.multiselect(
         "Select Quarters",
         options=quarters,
-        default=[quarters[-1]],  # Default to the most recent quarter
-        key="quarter_selector_multiselect"
+        default=suggested_quarters  # Pre-select quarters based on selected months
     )
     if selected_quarters:
         df = df[df['Quarter'].isin(selected_quarters)]
 
-# Business Line selector (allow multiple selections)
+# Business Line selector (pre-select all options by default)
 with col4:
     business_lines = sorted(df['Product'].dropna().unique())
     selected_business_lines = st.multiselect(
-        "Select Business Line",
+        "Select Business Lines",
         options=business_lines,
-        default=[business_lines[-1]],  # Default to the most recent business line
-        key="business_line_selector_multiselect"
+        default=business_lines  # Pre-select all business lines by default
     )
     if selected_business_lines:
         df = df[df['Product'].isin(selected_business_lines)]
@@ -355,7 +368,6 @@ if not df.empty:
         </style>
         """, unsafe_allow_html=True)
 
-    st.dataframe(df)
 
 
     # Function to display metrics in styled boxes with tooltips
