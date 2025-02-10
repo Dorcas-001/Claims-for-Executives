@@ -41,6 +41,13 @@ month_order = {
     "May": 5, "June": 6, "July": 7, "August": 8, 
     "September": 9, "October": 10, "November": 11, "December": 12
 }
+# Define the mapping of months to quarters
+month_to_quarter = {
+    "January": "Q1", "February": "Q1", "March": "Q1",
+    "April": "Q2", "May": "Q2", "June": "Q2",
+    "July": "Q3", "August": "Q3", "September": "Q3",
+    "October": "Q4", "November": "Q4", "December": "Q4"
+}
 current_date = datetime.now()
 
 
