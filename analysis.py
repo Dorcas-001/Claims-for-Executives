@@ -283,31 +283,22 @@ df_app = df[df['Claim Status'] == 'Approved']
 df_dec = df[df['Claim Status'] == 'Declined']
 
 if not df.empty:
+    scale = 1_000_000  # For millions
+    scaling = 1000  # For thousands
 
-    scale=1_000_000  # For millions
+    # Calculate key metrics
+    total_claim_amount = (df["Claim Amount"].sum()) / scale
+    average_amount = (df["Claim Amount"].mean()) / scaling
+    average_app_amount = (df["Approved Claim Amount"].mean()) / scaling
 
-    total_claim_amount = (df["Claim Amount"].sum())/scale
-    total_claim_amount
-    average_amount =(df["Claim Amount"].mean())/scale
-    average_app_amount =(df["Approved Claim Amount"].mean())/scale
-
-    total_out = (df_out['Claim Amount'].sum())/scale
-    total_dental = (df_dental['Claim Amount'].sum())/scale
-    total_wellness = (df_wellness['Claim Amount'].sum())/scale
-    total_optical = (df_optical['Claim Amount'].sum())/scale
-    total_in = (df_in['Claim Amount'].sum())/scale
-    total_phar = (df_phar['Claim Amount'].sum())/scale
-    total_pro = (df_pro['Claim Amount'].sum())/scale
-    total_mat = (df_mat['Claim Amount'].sum())/scale
-
-    total_app_claim_amount = (df_app["Claim Amount"].sum())/scale
-    total_dec_claim_amount = (df_dec["Claim Amount"].sum())/scale
+    total_app_claim_amount = (df_app["Approved Claim Amount"].sum()) / scale
+    total_dec_claim_amount = (df_dec["Claim Amount"].sum()) / scaling
 
     total_app = df_app["Claim ID"].nunique()
     total_dec = df_dec["Claim ID"].nunique()
 
-    total_health_claim_amount = (df_app["Claim Amount"].sum())/scale
-    total_pro_claim_amount = (df_dec["Claim Amount"].sum())/scale
+    total_health_claim_amount = (df_health["Claim Amount"].sum()) / scale
+    total_pro_claim_amount = (df_proactiv["Claim Amount"].sum()) / scale
 
     total_health = df_health["Claim ID"].nunique()
     total_proactiv = df_proactiv["Claim ID"].nunique()
@@ -315,10 +306,17 @@ if not df.empty:
     total_clients = df["Employer Name"].nunique()
     total_claims = df["Claim ID"].nunique()
 
+    # Approval and Denial Rates
+    total_app_per = (total_app / total_claims) * 100 if total_claims > 0 else 0
+    total_dec_per = (total_dec / total_claims) * 100 if total_claims > 0 else 0
 
-    total_app_per = (total_app/total_claims)*100
-    total_dec_per = (total_dec/total_claims)*100
+    # Approval Rate (Claims Approved / Total Claims)
+    approval_rate = (total_app / total_claims) * 100 if total_claims > 0 else 0
 
+    # Denial Rate (Claims Declined / Total Claims)
+    denial_rate = (total_dec / total_claims) * 100 if total_claims > 0 else 0
+
+    percent_app = (total_app_claim_amount / total_claim_amount) * 100 if total_claim_amount > 0 else 0
 
     percent_app = (total_app_claim_amount/total_claim_amount) *100
 
@@ -370,29 +368,26 @@ if not df.empty:
             """, unsafe_allow_html=True)
 
 
-   # Calculate key metrics
-    st.markdown(f'<h2 class="custom-subheader">For all Claims in Numbers ({filter_description.strip()})</h2>', unsafe_allow_html=True)    
-
-    cols1,cols2, cols3 = st.columns(3)
-
+    # Display client and claim metrics
+    st.markdown(f'<h2 class="custom-subheader">For all Claims in Numbers ({filter_description.strip()})</h2>', unsafe_allow_html=True)
+    cols1, cols2, cols3 = st.columns(3)
     display_metric(cols1, "Number of Clients", total_clients)
-    display_metric(cols2, "Number of Claims", total_claims)
-    display_metric(cols3, "Number of Approved Claims", total_app)
-    display_metric(cols1, "Number of Declined Claims",total_dec)
-    display_metric(cols2, "Percentage Approved", F"{total_app_per: .0F} %")
-    display_metric(cols3, "Percentage Declined", F"{total_dec_per: .0F} %")
+    display_metric(cols2, "Number of Claims", f"{total_claims:,}")
+    display_metric(cols3, "Number of Approved Claims", f"{total_app:,}")
+    display_metric(cols1, "Number of Declined Claims", total_dec)
+    display_metric(cols2, "Approval Rate", f"{approval_rate:.2f} %")
+    display_metric(cols3, "Denial Rate", f"{denial_rate:.2f} %")
 
-    # Calculate key metrics
-    st.markdown(f'<h2 class="custom-subheader">For all Claim Amounts ({filter_description.strip()})</h2>', unsafe_allow_html=True)    
-
-    cols1,cols2, cols3 = st.columns(3)
-
+    # Display claim amount metrics
+    st.markdown(f'<h2 class="custom-subheader">For all Claim Amounts ({filter_description.strip()})</h2>', unsafe_allow_html=True)
+    cols1, cols2, cols3 = st.columns(3)
     display_metric(cols1, "Total Claims", total_claims)
     display_metric(cols2, "Total Claim Amount", f"{total_claim_amount:,.0f} M")
     display_metric(cols3, "Total Approved Claim Amount", f"{total_app_claim_amount:,.0f} M")
-    display_metric(cols1, "Total Declined Claim Amount", f"{total_dec_claim_amount:,.0f} M")
-    display_metric(cols2, "Average Claim Amount Per Client", F"{average_amount:,.0F} M")
-    display_metric(cols3, "Average Claim Amount Per Client", F"{average_app_amount: ,.0F} M")
+    display_metric(cols1, "Total Declined Claim Amount", f"{total_dec_claim_amount:,.0f} K")
+    display_metric(cols2, "Average Claim Amount Per Client", f"{average_amount:,.1f} K")
+    display_metric(cols3, "Average Approved Claim Amount Per Client", f"{average_app_amount:,.1f} K")
+
 
     custom_colors = ["#009DAE", "#e66c37", "#461b09", "#f8a785", "#CC3636","#9ACBD0"]
 
@@ -437,13 +432,20 @@ if not df.empty:
 
         st.plotly_chart(fig2, use_container_width=True)
 
-    # Group data by "Year" and "Month" to calculate total claims and total claim amount
+    # Group data by "Year" and "Month" to calculate total claims and average claim amount
     yearly_claim_data = df.groupby(['Year'])['Claim Amount'].agg(['mean', 'size']).reset_index()
     monthly_claim_data = df.groupby(['Month'])['Claim Amount'].agg(['mean', 'size']).reset_index()
 
+    # Format numbers with commas and rounding
+    yearly_claim_data['size_formatted'] = yearly_claim_data['size'].apply(lambda x: f'{x:,.0f}')  # Add commas for counts
+    yearly_claim_data['mean_formatted'] = yearly_claim_data['mean'].apply(lambda x: f'{x:,.2f}')  # Round to 2 decimals
+
+    monthly_claim_data['size_formatted'] = monthly_claim_data['size'].apply(lambda x: f'{x:,.0f}')  # Add commas for counts
+    monthly_claim_data['mean_formatted'] = monthly_claim_data['mean'].apply(lambda x: f'{x:,.2f}')  # Round to 2 decimals
 
 
-    # Yearly Chart: Total Claims and Claim Amount by Year
+
+    # Yearly Chart: Total Claims and Average Claim Amount by Year
     with cols2:
         # Create the grouped bar chart for yearly data
         fig_yearly_claims = go.Figure()
@@ -453,19 +455,19 @@ if not df.empty:
             x=yearly_claim_data['Year'],
             y=yearly_claim_data['size'],
             name='Total Claims',
-            text=yearly_claim_data['size'],
+            text=yearly_claim_data['size_formatted'],  # Use formatted text
             textposition='inside',
             textfont=dict(color='white'),
             hoverinfo='x+y+name',
             marker_color=custom_colors[0]
         ))
 
-        # Add trace for Total Claim Amount (Sum)
+        # Add trace for Average Claim Amount
         fig_yearly_claims.add_trace(go.Bar(
             x=yearly_claim_data['Year'],
             y=yearly_claim_data['mean'],
             name='Average Claim Amount',
-            text=yearly_claim_data['mean'],
+            text=yearly_claim_data['mean_formatted'],  # Use formatted text
             textposition='inside',
             textfont=dict(color='white'),
             hoverinfo='x+y+name',
@@ -488,7 +490,7 @@ if not df.empty:
         st.markdown('<h3 class="custom-subheader">Yearly Total Claims and Average Claim Amount</h3>', unsafe_allow_html=True)
         st.plotly_chart(fig_yearly_claims, use_container_width=True)
 
-    # Monthly Chart: Total Claims and Claim Amount by Month
+    # Monthly Chart: Total Claims and Average Claim Amount by Month
     with cols1:
         # Create the grouped bar chart for monthly data
         fig_monthly_claims = go.Figure()
@@ -498,19 +500,19 @@ if not df.empty:
             x=monthly_claim_data['Month'],
             y=monthly_claim_data['size'],
             name='Total Claims',
-            text=monthly_claim_data['size'],
+            text=monthly_claim_data['size_formatted'],  # Use formatted text
             textposition='inside',
             textfont=dict(color='white'),
             hoverinfo='x+y+name',
             marker_color=custom_colors[0]
         ))
 
-        # Add trace for Total Claim Amount (Sum)
+        # Add trace for Average Claim Amount
         fig_monthly_claims.add_trace(go.Bar(
             x=monthly_claim_data['Month'],
             y=monthly_claim_data['mean'],
             name='Average Claim Amount',
-            text=monthly_claim_data['mean'],
+            text=monthly_claim_data['mean_formatted'],  # Use formatted text
             textposition='inside',
             textfont=dict(color='white'),
             hoverinfo='x+y+name',
@@ -539,6 +541,9 @@ if not df.empty:
     # Sort the data by average claim amount in descending order
     claim_type_avg = claim_type_avg.sort_values(by='Claim Amount', ascending=False)
 
+    # Format average claim amounts with commas and rounding
+    claim_type_avg['mean_formatted'] = claim_type_avg['Claim Amount'].apply(lambda x: f'{x:,.2f}')
+
     with cols2:
         # Create the bar chart for average claim amount by claim type
         fig_claim_type_avg = go.Figure()
@@ -548,7 +553,7 @@ if not df.empty:
             x=claim_type_avg['Claim Type'],
             y=claim_type_avg['Claim Amount'],
             name='Average Claim Amount',
-            text=claim_type_avg['Claim Amount'].round(2),  # Display values rounded to 2 decimal places
+            text=claim_type_avg['mean_formatted'],  # Use formatted text
             textposition='inside',
             textfont=dict(color='white'),
             hoverinfo='x+y+name',
@@ -569,7 +574,6 @@ if not df.empty:
         # Display the chart in Streamlit
         st.markdown('<h3 class="custom-subheader">Average Claim Amount by Claim Type</h3>', unsafe_allow_html=True)
         st.plotly_chart(fig_claim_type_avg, use_container_width=True)
-
 
     # Create the layout columns
     cls1, cls2 = st.columns(2)

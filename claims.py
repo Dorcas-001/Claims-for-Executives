@@ -14,7 +14,7 @@ from datetime import datetime
 
 
 st.set_page_config(
-    page_title="Eden Care Claims Dashboard",
+    page_title="Eden Care Claims Dashboard Executive View",
     page_icon=Image.open("logo.png"),
     layout="wide",
     initial_sidebar_state="expanded"
@@ -151,7 +151,7 @@ def display_dashboard(username):
     with tabs[0]:
             st.markdown('<h1 class="main-title">EDEN CARE CLAIMS MANAGEMENT DASHBOARD</h1>', unsafe_allow_html=True)
             st.image("Tiny doctor giving health insurance.jpg", caption='Eden Care Medical', use_column_width=True)
-            st.markdown('<h2 class="subheader">Welcome to the Eden Care Claims Management Dashboard</h2>', unsafe_allow_html=True)
+            st.markdown('<h2 class="subheader">Welcome to the Eden Care Claims Management Dashboard Executive View</h2>', unsafe_allow_html=True)
 
             # Introduction
             st.markdown(
