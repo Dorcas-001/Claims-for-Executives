@@ -10,7 +10,10 @@ import plotly.graph_objects as go
 from datetime import datetime
 
 
-
+# Import functions from other files
+from overview import display_overview
+from analysis import display_analysis
+from sidebar import create_sidebar_filters
 
 
 st.set_page_config(
@@ -189,13 +192,13 @@ def display_dashboard(username):
             st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
 
         
+    # Overview Tab
     with tabs[1]:
-        exec(open("overview.py").read())
+        display_overview()
 
+    # Claims Analysis Tab
     with tabs[2]:
-        exec(open("analysis.py").read())
-
-
+        display_analysis()
 
 # Streamlit app
 def main():
