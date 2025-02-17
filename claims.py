@@ -56,7 +56,7 @@ current_date = datetime.now()
 
 
 # Function to display the dashboard
-def display_dashboard(username):
+def display_exec_dashboard(username):
     # SIDEBAR FILTER
     logo_url = 'EC_logo.png'  
     st.sidebar.image(logo_url, use_column_width=True)
