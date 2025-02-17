@@ -56,7 +56,7 @@ current_date = datetime.now()
 
 
 # Function to display the dashboard
-def display_exec_dashboard(username):
+def display_dashboard(username):
     # SIDEBAR FILTER
     logo_url = 'EC_logo.png'  
     st.sidebar.image(logo_url, use_column_width=True)
@@ -202,7 +202,7 @@ def main():
         st.session_state['username'] = ""
 
     if st.session_state['logged_in']:
-        display_exec_dashboard(st.session_state['username'])
+        display_dashboard(st.session_state['username'])
     else:
         st.title("Login Page")
 
