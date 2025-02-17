@@ -202,7 +202,7 @@ def main():
         st.session_state['username'] = ""
 
     if st.session_state['logged_in']:
-        display_dashboard(st.session_state['username'])
+        display_exec_dashboard(st.session_state['username'])
     else:
         st.title("Login Page")
 
